@@ -1,0 +1,26 @@
+version: '3' # версия синтаксиса
+services:
+  db: # База данных
+    image: prismagraphql/mongo-single-replica:5.0.3
+    ports:
+      - '27017:27017'
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: monty
+      MONGO_INITDB_ROOT_PASSWORD: pass
+  express-app: # Сервер Express
+    build: .
+    ports:
+      - '3000:3000'
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: 'mongodb://monty:pass@db:27017/mydatabase?authSource=admin&directConnection=true'
+  react-app: # React-приложение
+    build: ../react-threads # Путь к вашему React-приложению относительно корня вашего проекта
+    ports:
+      - '80:80' # Порт, на котором будет доступно ваше React-приложение
+      - '8000:8000' # Порт, на котором будет доступно ваше React-приложение
+    depends_on:
+      - express-app
+volumes:
+  react_app: # Объявление именованного тома
