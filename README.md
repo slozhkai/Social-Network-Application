@@ -1,16 +1,12 @@
 # Для запуска проекта, необходимо выполнить следующие шаги:
 
-1. Склонировать репозиторий с клиентским приложением по ссылке https://github.com/brian7346/react-threads.git на свой компьютер.
+1. Склонировать репозиторий с API и клиентским приложением по ссылке https://github.com/slozhkai/Social-Network-Application на свой компьютер.
 ```
-git clone https://github.com/brian7346/react-threads.git
-```
-
-2. Склонировать репозиторий с api по ссылке [https://github.com/brian7346/express-threads-api.git](https://github.com/brian7346/express-threads-api/tree/main) на свой компьютер.
-```
-git clone https://github.com/brian7346/express-threads-api.git
+git clone https://github.com/slozhkai/Social-Network-Application
 ```
 
-3. Открыть терминал (или командную строку) и перейти в корневую директорию сервера.
+
+2. Открыть терминал (или командную строку) и перейти в корневую директорию сервера.
 ```
 cd express-threads-api
 ```
@@ -29,7 +25,7 @@ docker compose up
 
 
 
-# Если вы хотите скачать образ базы данных MongoDB
+# Что бы скачать образ базы данных MongoDB необходимо ввести следующую команду
 
 Запустите контейнер с образом MongoDB и настройками replica set (он автоматичиски скачает и запустит этот образ):
 
@@ -40,3 +36,16 @@ docker compose up
        -e MONGO_INITDB_ROOT_PASSWORD="pass" \
        -d prismagraphql/mongo-single-replica:5.0.3
 ```
+
+
+# Стек технологий:
+
+- Express.js
+- Docker
+- MongoDB
+- Prisma
+- React
+- Redux Toolkit
+- NextUI 
+- Tailwindcss
+
