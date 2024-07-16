@@ -30,19 +30,16 @@ const CommentController = {
       const { id } = req.params;
       const userId = req.user.userId;
 
-      // Check if comment exists
       const comment = await prisma.comment.findUnique({ where: { id } });
 
       if (!comment) {
         return res.status(404).json({ error: 'Комментарий не найден' });
       }
 
-      // Check if the user is the owner of the comment
       if (comment.userId !== userId) {
         return res.status(403).json({ error: 'Вы не авторизованы для удаления этого комментария' });
       }
 
-      // Delete the comment
       await prisma.comment.delete({ where: { id } });
 
       res.json(comment);
