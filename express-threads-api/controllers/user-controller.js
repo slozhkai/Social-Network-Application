@@ -4,6 +4,7 @@ const fs = require('fs');
 const jwt = require("jsonwebtoken");
 const { prisma } = require("../prisma/prisma-client");
 const Jdenticon = require('jdenticon');
+const nodemailer = require('nodemailer');
 
 const UserController = {
   register: async (req, res) => {
@@ -20,24 +21,79 @@ const UserController = {
       }
 
       const hashedPassword = await bcrypt.hash(password, 10);
+      const emailToken = jwt.sign({ email }, process.env.EMAIL_KEY, { expiresIn: '1d' });
+      const verificationURL = `http://localhost:3000/api/verify-email?token=${emailToken}`;
+
+      const testAccount = await nodemailer.createTestAccount();
+      let transporter = nodemailer.createTransport({
+        host: 'smtp.ethereal.email',
+        port: 587,
+        secure: false,
+        auth: {
+          user: testAccount.user,
+          pass: testAccount.pass
+        }
+      });
+
+      try {
+        let info = await transporter.sendMail({
+          from: '"Example Team" <example@example.com>',
+          to: email,
+          subject: 'Подтверждение email',
+          text: `Перейдите по ссылке для подтверждения Вашего Email: ${verificationURL}`,
+        });
+        console.log("Message sent: %s", info.messageId);
+        console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+      } catch (error) {
+        console.error("Error sending email:", error);
+        return res.status(500).json({ error: "Ошибка при отправке email" });
+      }
 
       const png = Jdenticon.toPng(name, 200);
       const avatarName = `${name}_${Date.now()}.png`;
       const avatarPath = path.join(__dirname, '/../uploads', avatarName);
       fs.writeFileSync(avatarPath, png);
-  
+
       const user = await prisma.user.create({
         data: {
           email,
           password: hashedPassword,
           name,
           avatarUrl: `/uploads/${avatarName}`,
+          isVerified: false,
+          status: "pending"
         },
       });
 
-      res.json(user);
+      res.json({ message: "Пожалуйста, подтвердите ваш email", user });
     } catch (error) {
       console.error("Ошибка в регистрации:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  },
+
+  verifyEmail: async (req, res) => {
+    const { token } = req.query;
+
+    try {
+      const { email } = jwt.verify(token, process.env.EMAIL_KEY);
+      const user = await prisma.user.findUnique({ where: { email } });
+
+      if (!user || user.status !== 'pending') {
+        return res.status(400).json({ error: "Invalid or expired token" });
+      }
+
+      await prisma.user.update({
+        where: { email },
+        data: {
+          isVerified: true,
+          status: "verified" // обновление статуса
+        }
+      });
+
+      res.status(200).json({ message: "Email successfully verified" });
+    } catch (error) {
+      console.error("Error verifying email:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   },
@@ -66,7 +122,7 @@ const UserController = {
 
 
       // Generate a JWT
-      const token = jwt.sign({ userId: user.id }, '123'); // Разобраться в чем проблема
+      const token = jwt.sign({ userId: user.id }, process.env.SECRET_KEY); // Разобраться в чем проблема
 
 
       console.log(user);

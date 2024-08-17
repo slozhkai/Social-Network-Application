@@ -18,6 +18,8 @@ model User {
   updatedAt   DateTime  @updatedAt
   bio         String?
   location    String?
+  isVerified  Boolean   @default(false)
+  status      String    @default("pending")
   posts       Post[]
   likes       Like[]
   comments    Comment[]
